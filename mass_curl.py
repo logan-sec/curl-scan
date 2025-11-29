@@ -17,13 +17,14 @@ def main():
     parser = argparse.ArgumentParser(
         description="Run curl against many URLs from a file."
     )
-    
-    # MISSING IN YOUR VERSION — required
+
+    # URL file (required)
     parser.add_argument(
         "url_file",
-        help="File containing one URL per line"
+        help="File containing one URL per line",
     )
 
+    # Everything after the URL file is passed to curl
     parser.add_argument(
         "curl_args",
         nargs=argparse.REMAINDER,
@@ -43,11 +44,13 @@ def main():
     for url in urls:
         print(f"\n[*] Requesting: {url}")
 
+        # Show headers + status + time, hide body
         cmd = [
             "curl",
-            "-s",
-            "-o", "/dev/null",   # discard body
-            "-w", "HTTP %{http_code} | time %{time_total}s\n",
+            "-s",              # silent (no progress bar)
+            "-D", "-",         # print response headers to stdout
+            "-o", "/dev/null", # discard body
+            "-w", "\nHTTP %{http_code} | time %{time_total}s\n",
         ] + args.curl_args + [url]
 
         result = subprocess.run(
@@ -59,8 +62,11 @@ def main():
         if result.stdout:
             print(result.stdout.strip())
         if result.stderr:
-            pass  # uncomment if you want to see errors
+            # Uncomment if you want to see curl errors/warnings
+            # print(result.stderr.strip())
+            pass
 
 if __name__ == "__main__":
     main()
+
 
